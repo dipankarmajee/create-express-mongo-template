@@ -3,31 +3,69 @@
 const fs = require("fs");
 const path = require("path");
 const https = require("https");
-const { execSync } = require("child_process");
+const { spawnSync } = require("child_process");
 
 // Create the target directory
 const targetDir = process.argv[2] || "my-express-mongo-app";
 fs.mkdirSync(targetDir);
 
-// Fetch the template files from a remote source (e.g., GitHub)
-const remoteFiles = [
-  {
-    url: "https://raw.githubusercontent.com/dipankarmajee/create-emongo/master/src/app.js",
-    path: "app.js",
-  },
-  // Add more template files if necessary
-];
+// Fetch the files and folders from a remote repository
+const repoUrl =
+  "https://github.com/dipankarmajee/create-express-mongo-template";
+const branch = "create-express-mongo-template-files";
+const apiEndpoint = `https://api.github.com/repos/dipankarmajee/create-express-mongo-template/git/trees/${branch}?recursive=1`;
+const headers = { "User-Agent": "CreateExpressMongoApp" };
+
+async function fetchRepositoryContents() {
+  const response = await fetch(apiEndpoint, { headers });
+  const result = await response.json();
+  const tree = result.tree;
+
+  console.log("Downloading files...");
+
+  for (const item of tree) {
+    const { type, url, path: filePath } = item;
+
+    if (type === "blob") {
+      const fullPath = path.join(targetDir, filePath);
+      await downloadFile(url, fullPath);
+    } else if (type === "tree") {
+      const directoryPath = path.join(targetDir, filePath);
+      fs.mkdirSync(directoryPath, { recursive: true });
+    }
+  }
+
+  console.log("Files downloaded successfully!");
+}
 
 function downloadFile(url, filePath) {
   return new Promise((resolve, reject) => {
     const file = fs.createWriteStream(filePath);
 
     https
-      .get(url, (response) => {
-        response.pipe(file);
+      .get(url, { headers }, (response) => {
+        let data = "";
 
-        file.on("finish", () => {
-          file.close(resolve);
+        response.setEncoding("utf-8");
+
+        response.on("data", (chunk) => {
+          data += chunk;
+        });
+
+        response.on("end", () => {
+          const responseData = JSON.parse(data);
+          const fileContent = Buffer.from(
+            responseData.content,
+            "base64"
+          ).toString("utf-8");
+          file.write(fileContent, "utf-8", (err) => {
+            if (err) {
+              reject(err);
+            } else {
+              file.end();
+              resolve();
+            }
+          });
         });
       })
       .on("error", (error) => {
@@ -37,11 +75,33 @@ function downloadFile(url, filePath) {
   });
 }
 
-async function fetchTemplateFiles() {
-  for (const { url, path: filePath } of remoteFiles) {
-    const fullPath = path.join(targetDir, filePath);
-    await downloadFile(url, fullPath);
+function installNpmPackages() {
+  const installCmd = process.platform === "win32" ? "npm.cmd" : "npm";
+  const installArgs = [
+    "install",
+    "express",
+    "morgan",
+    "body-parser",
+    "cookie-parser",
+    "cors",
+    "helmet",
+    "mongoose",
+    "--save",
+  ];
+  const installResult = spawnSync(installCmd, installArgs, {
+    stdio: "inherit",
+  });
+
+  if (installResult.status === 0) {
+    console.log("Packages installed successfully!");
+  } else {
+    console.error("Error installing packages:", installResult.error);
+    process.exit(1); // Exit with an error status code
   }
+}
+
+async function fetchTemplateFiles() {
+  await fetchRepositoryContents();
 
   // Move into the target directory
   process.chdir(targetDir);
@@ -66,11 +126,8 @@ async function fetchTemplateFiles() {
     "utf-8"
   );
 
-  // Install npm packages
   console.log("Installing packages. This may take a moment...");
-  execSync(
-    "npm install express morgan body-parser cookie-parser cors helmet mongoose"
-  );
+  installNpmPackages();
 
   // Move back to the root directory
   process.chdir("..");
@@ -82,7 +139,9 @@ fetchTemplateFiles()
     console.log(
       `Successfully created "create-express-mongo-template" application in "${targetDir}" directory.`
     );
+    process.exit(0); // Exit with a success status code
   })
   .catch((error) => {
     console.error("Error fetching template files:", error);
+    process.exit(1); // Exit with an error status code
   });

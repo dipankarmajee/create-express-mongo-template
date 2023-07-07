@@ -20,7 +20,7 @@ Before using Create Express Mongo Template, ensure that you have Node.js and npm
 Generate a new Express.js application with MongoDB integration:
 
 ```shell
-create-express-mongo-template <project-name>
+npx create-express-mongo-template <project-name>
 ```
 
 Replace <project-name> with your desired project name. This command will create a new directory, set up the folder structure, and install the necessary packages.
