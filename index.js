@@ -35,7 +35,7 @@ function copyFolderSync(sourceDir, targetDir) {
 }
 
 function copyAndExecuteFolder() {
-  const sourceDir = path.join(__dirname, "myExpressMongoTemplate");
+  const sourceDir = path.join(__dirname, "template");
   const targetDir = process.argv[2] || "my-express-mongo-app";
 
   // Copy the contents of the folder to the target directory
