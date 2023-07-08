@@ -1,6 +1,6 @@
 {
   "name": "create-express-mongo-template",
-  "version": "1.0.23",
+  "version": "1.0.24",
   "description": "A CLI tool to generate Express.js and MongoDB boilerplate code",
   "main": "index.js",
   "bin": {
