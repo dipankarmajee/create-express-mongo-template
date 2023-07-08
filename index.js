@@ -14,7 +14,14 @@ function createAppFiles() {
     { name: "app.js", content: "" },
     { name: ".env", content: "" },
     { name: ".gitignore", content: "" },
-    { name: "config", isDirectory: true },
+    {
+      name: "config",
+      isDirectory: true,
+      files: [
+        { name: "db.js", content: "" },
+        { name: "express.js", content: "" },
+      ],
+    },
     { name: "controllers", isDirectory: true },
     { name: "middlewares", isDirectory: true },
     { name: "models", isDirectory: true },
@@ -24,11 +31,18 @@ function createAppFiles() {
   ];
 
   for (const item of filesAndFolders) {
-    const { name, content, isDirectory } = item;
+    const { name, content, isDirectory, files } = item;
     const itemPath = path.join(targetDir, name);
 
     if (isDirectory) {
       fs.mkdirSync(itemPath);
+      if (files && files.length > 0) {
+        for (const file of files) {
+          const { name: fileName, content: fileContent } = file;
+          const filePath = path.join(itemPath, fileName);
+          fs.writeFileSync(filePath, fileContent);
+        }
+      }
     } else {
       fs.writeFileSync(itemPath, content);
     }
