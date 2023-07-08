@@ -2,79 +2,42 @@
 
 const fs = require("fs");
 const path = require("path");
-const https = require("https");
 const { spawnSync } = require("child_process");
 
 // Create the target directory
 const targetDir = process.argv[2] || "my-express-mongo-app";
 fs.mkdirSync(targetDir);
 
-// Fetch the files and folders from a remote repository
-const repoUrl =
-  "https://github.com/dipankarmajee/create-express-mongo-template";
-const branch = "create-express-mongo-template-files";
-const apiEndpoint = `https://api.github.com/repos/dipankarmajee/create-express-mongo-template/git/trees/${branch}?recursive=1`;
-const headers = { "User-Agent": "CreateExpressMongoApp" };
+/* CREATE FOLDERS AND FILES */
+function createAppFiles() {
+  const filesAndFolders = [
+    { name: "app.js", content: "" },
+    { name: ".env", content: "" },
+    { name: ".gitignore", content: "" },
+    { name: "config", isDirectory: true },
+    { name: "controllers", isDirectory: true },
+    { name: "middlewares", isDirectory: true },
+    { name: "models", isDirectory: true },
+    { name: "public", isDirectory: true },
+    { name: "routes", isDirectory: true },
+    { name: "views", isDirectory: true },
+  ];
 
-async function fetchRepositoryContents() {
-  const response = await fetch(apiEndpoint, { headers });
-  const result = await response.json();
-  const tree = result.tree;
+  for (const item of filesAndFolders) {
+    const { name, content, isDirectory } = item;
+    const itemPath = path.join(targetDir, name);
 
-  console.log("Downloading files...");
-
-  for (const item of tree) {
-    const { type, url, path: filePath } = item;
-
-    if (type === "blob") {
-      const fullPath = path.join(targetDir, filePath);
-      await downloadFile(url, fullPath);
-    } else if (type === "tree") {
-      const directoryPath = path.join(targetDir, filePath);
-      fs.mkdirSync(directoryPath, { recursive: true });
+    if (isDirectory) {
+      fs.mkdirSync(itemPath);
+    } else {
+      fs.writeFileSync(itemPath, content);
     }
   }
 
-  console.log("Files downloaded successfully!");
+  console.log("Files and folders created successfully!");
 }
 
-function downloadFile(url, filePath) {
-  return new Promise((resolve, reject) => {
-    const file = fs.createWriteStream(filePath);
-
-    https
-      .get(url, { headers }, (response) => {
-        let data = "";
-
-        response.setEncoding("utf-8");
-
-        response.on("data", (chunk) => {
-          data += chunk;
-        });
-
-        response.on("end", () => {
-          const responseData = JSON.parse(data);
-          const fileContent = Buffer.from(
-            responseData.content,
-            "base64"
-          ).toString("utf-8");
-          file.write(fileContent, "utf-8", (err) => {
-            if (err) {
-              reject(err);
-            } else {
-              file.end();
-              resolve();
-            }
-          });
-        });
-      })
-      .on("error", (error) => {
-        fs.unlinkSync(filePath);
-        reject(error);
-      });
-  });
-}
-
+/* INSTALL NPM PACKAGES */
 function installNpmPackages() {
   const installCmd = process.platform === "win32" ? "npm.cmd" : "npm";
   const installArgs = [
@@ -101,48 +64,61 @@ function installNpmPackages() {
   }
 }
 
-async function fetchTemplateFiles() {
-  await fetchRepositoryContents();
+/* CREATE PACKAGE.JSON  */
+// If Promise is resolved then installNpmPackages() will be called inside this function.
+function createPackageJson() {
+  return new Promise((resolve, reject) => {
+    const appName = process.argv[3] || "my-express-mongo-app";
+    const packageJson = {
+      name: appName,
+      version: "1.0.0",
+      description: "",
+      main: "app.js",
+      scripts: {
+        start: "node app.js",
+      },
+      author: "",
+      license: "MIT",
+    };
+
+    // Creating package.json file
+    fs.writeFile(
+      "package.json",
+      JSON.stringify(packageJson, null, 2),
+      "utf-8",
+      (err) => {
+        if (err) {
+          console.error("Error creating package.json:", err);
+          reject(err);
+        } else {
+          console.log("package.json created successfully!");
+          console.log("Installing packages. This may take a moment...");
+          installNpmPackages();
+          // Move back to the root directory
+          process.chdir("..");
+          resolve();
+        }
+      }
+    );
+  });
+}
+
+async function createTemplateFiles() {
+  createAppFiles();
 
   // Move into the target directory
   process.chdir(targetDir);
 
   // Create package.json
-  const appName = process.argv[3] || "my-express-mongo-app";
-  const packageJson = {
-    name: appName,
-    version: "1.0.0",
-    description: "",
-    main: "app.js",
-    scripts: {
-      start: "node app.js",
-    },
-    author: "",
-    license: "MIT",
-  };
-
-  fs.writeFileSync(
-    "package.json",
-    JSON.stringify(packageJson, null, 2),
-    "utf-8"
-  );
-
-  console.log("Installing packages. This may take a moment...");
-  installNpmPackages();
+  await createPackageJson();
 
   // Move back to the root directory
   process.chdir("..");
+
+  console.log(
+    `Successfully created "create-express-mongo-template" application in "${targetDir}" directory.`
+  );
 }
 
-// Fetch the template files and install dependencies
-fetchTemplateFiles()
-  .then(() => {
-    console.log(
-      `Successfully created "create-express-mongo-template" application in "${targetDir}" directory.`
-    );
-    process.exit(0); // Exit with a success status code
-  })
-  .catch((error) => {
-    console.error("Error fetching template files:", error);
-    process.exit(1); // Exit with an error status code
-  });
+// Create the template files and folders
+createTemplateFiles();
