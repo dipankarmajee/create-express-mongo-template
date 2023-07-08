@@ -2,6 +2,14 @@
 
 🐳 Create Express Mongo Template is a command-line tool to quickly set up an Express.js application with MongoDB integration.
 
+### Usage
+
+Generate a new Express.js application with MongoDB integration:
+
+```shell
+npx create-express-mongo-template <project-name>
+```
+
 ## Features
 
 - 🚀 Generates an Express.js application with a structured folder hierarchy.
@@ -15,29 +23,33 @@
 
 Before using Create Express Mongo Template, ensure that you have Node.js and npm installed on your machine.
 
-### Usage
-
-Generate a new Express.js application with MongoDB integration:
-
-```shell
-npx create-express-mongo-template <project-name>
-```
-
 Replace <project-name> with your desired project name. This command will create a new directory, set up the folder structure, and install the necessary packages.
 
 Directory Structure
 The generated Express.js application will have the following directory structure:
 
 - <project-name>
+  - config
+    - db.js
+    - express.js
+  - controllers
+    - userController.js
+  - middlewares
+    - authMiddleware.js
+  - models
+    - userModel.js
   - public
-  - src
-    - routes
-    - views
-    - controllers
-    - models
-    - config
+    - index.html
+    - main.js
+    - style.css
+  - routes
+    - userRoutes.js
+  - views
+    - index.html
+  - .env
+  - .gitignore
   - package.json
-  - index.js
+  - app.js
 
 The public directory is for static assets like CSS, JavaScript, and images.
 The src directory contains the source code, including routes, views, controllers, models, and config folders.

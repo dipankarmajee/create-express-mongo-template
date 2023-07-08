@@ -86,6 +86,7 @@ function installNpmPackages() {
     "cors",
     "helmet",
     "mongoose",
+    "dotenv",
     "--save",
   ];
   const installResult = spawnSync(installCmd, installArgs, {
