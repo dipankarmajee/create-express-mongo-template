@@ -61,8 +61,6 @@ function installNpmPackages() {
     "install",
     "express",
     "morgan",
-    "body-parser",
-    "cookie-parser",
     "cors",
     "helmet",
     "mongoose",
