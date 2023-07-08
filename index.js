@@ -9,46 +9,49 @@ const targetDir = process.argv[2] || "my-express-mongo-app";
 fs.mkdirSync(targetDir);
 
 /* CREATE FOLDERS AND FILES */
-function createAppFiles() {
-  const filesAndFolders = [
-    { name: "app.js", content: "" },
-    { name: ".env", content: "" },
-    { name: ".gitignore", content: "" },
-    {
-      name: "config",
-      isDirectory: true,
-      files: [
-        { name: "db.js", content: "" },
-        { name: "express.js", content: "" },
-      ],
-    },
-    { name: "controllers", isDirectory: true },
-    { name: "middlewares", isDirectory: true },
-    { name: "models", isDirectory: true },
-    { name: "public", isDirectory: true },
-    { name: "routes", isDirectory: true },
-    { name: "views", isDirectory: true },
-  ];
-
-  for (const item of filesAndFolders) {
-    const { name, content, isDirectory, files } = item;
-    const itemPath = path.join(targetDir, name);
-
-    if (isDirectory) {
-      fs.mkdirSync(itemPath);
-      if (files && files.length > 0) {
-        for (const file of files) {
-          const { name: fileName, content: fileContent } = file;
-          const filePath = path.join(itemPath, fileName);
-          fs.writeFileSync(filePath, fileContent);
-        }
-      }
-    } else {
-      fs.writeFileSync(itemPath, content);
-    }
+function copyFolderSync(sourceDir, targetDir) {
+  // Create the target directory if it doesn't exist
+  if (!fs.existsSync(targetDir)) {
+    fs.mkdirSync(targetDir);
   }
 
-  console.log("Files and folders created successfully!");
+  // Read the contents of the source directory
+  const files = fs.readdirSync(sourceDir);
+
+  // Iterate over the files and directories
+  for (const file of files) {
+    const sourcePath = path.join(sourceDir, file);
+    const targetPath = path.join(targetDir, file);
+
+    // Check if the current item is a directory
+    if (fs.statSync(sourcePath).isDirectory()) {
+      // Recursively copy the directory
+      copyFolderSync(sourcePath, targetPath);
+    } else {
+      // Copy the file
+      fs.copyFileSync(sourcePath, targetPath);
+    }
+  }
+}
+
+function copyAndExecuteFolder() {
+  const sourceDir = path.join(__dirname, "myExpressMongoTemplate");
+  const targetDir = process.argv[2] || "my-express-mongo-app";
+
+  // Copy the contents of the folder to the target directory
+  copyFolderSync(sourceDir, targetDir);
+
+  // Move into the target directory
+  process.chdir(targetDir);
+
+  // Execute the code or perform any other desired operations
+
+  // Move back to the root directory
+  process.chdir("..");
+
+  console.log(
+    `Successfully copied and executed folder "${sourceDir}" into "${targetDir}" directory.`
+  );
 }
 
 /* INSTALL NPM PACKAGES */
@@ -118,7 +121,7 @@ function createPackageJson() {
 }
 
 async function createTemplateFiles() {
-  createAppFiles();
+  copyAndExecuteFolder();
 
   // Move into the target directory
   process.chdir(targetDir);
