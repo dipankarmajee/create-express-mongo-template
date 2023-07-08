@@ -13,7 +13,7 @@ npx create-express-mongo-template <project-name>
 ## Features
 
 - 🚀 Generates an Express.js application with a structured folder hierarchy.
-- ⚙️ Includes common packages like Express, Morgan, Body Parser, Cookie Parser, CORS, Helmet, and Mongoose.
+- ⚙️ Includes common packages like express, morgan, body-parser, cookie-parser, cors, helmet, dotenv, and mongoose.
 - 📦 Integrates MongoDB for seamless database connectivity.
 - 💡 Provides a clean and organized starting point for your Express.js projects.
 
@@ -28,28 +28,29 @@ Replace <project-name> with your desired project name. This command will create 
 Directory Structure
 The generated Express.js application will have the following directory structure:
 
-- <project-name>
-  - config
-    - db.js
-    - express.js
-  - controllers
-    - userController.js
-  - middlewares
-    - authMiddleware.js
-  - models
-    - userModel.js
-  - public
-    - index.html
-    - main.js
-    - style.css
-  - routes
-    - userRoutes.js
-  - views
-    - index.html
-  - .env
-  - .gitignore
-  - package.json
-  - app.js
+## my-express-mongo-app
+
+- config
+  - db.js
+  - express.js
+- controllers
+  - userController.js
+- middlewares
+  - authMiddleware.js
+- models
+  - userModel.js
+- public
+  - index.html
+  - main.js
+  - style.css
+- routes
+  - userRoutes.js
+- views
+  - index.html
+- .env
+- .gitignore
+- package.json
+- app.js
 
 The public directory is for static assets like CSS, JavaScript, and images.
 The src directory contains the source code, including routes, views, controllers, models, and config folders.
