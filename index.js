@@ -62,7 +62,6 @@ function installNpmPackages() {
     "express",
     "morgan",
     "cors",
-    "helmet",
     "mongoose",
     "dotenv",
     "--save",
