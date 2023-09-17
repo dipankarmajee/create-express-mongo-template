@@ -130,7 +130,8 @@ async function createTemplateFiles() {
   process.chdir("..");
 
   console.log(
-    `Successfully created "create-express-mongo-template" application in "${targetDir}" directory.`
+    `File and packages are successfully downloaded.
+    cd "${targetDir}" directory.`
   );
 }
 
